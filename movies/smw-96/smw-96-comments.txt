@@ -1,5 +1,0 @@
-Title Screen (+1)
-Save one frame from optimised input on title screen.
-
-Yoshi's Island 2 (-70)
-71 frames are lost from having to collect Yoshi. This would be a lot more but optimised movement, corner boosts and item-swap bug allow us to shave off some time.
