@@ -4,7 +4,7 @@
  Operation check done by using snes9x-rr 1.43 v17 svn
  http://code.google.com/p/snes9x-rr/
 
- Contributers: gocha, Mr., bahamete.
+ Contributers: gocha, Mr.
 
  === Cheat Keys ===
 
@@ -24,31 +24,14 @@
 
  All of these features can be enabled / disabled by modifying the following option settings.
 
- 
 ]]--
 
 -- option start here >>
 
--- When no movie is playing
-local smwRegularDebugFuncOn = true			-- Exit level on Start + Select, etc
-local smwCutPowerupAnimationOn = false		-- No animation when damaged
-local smwCutPowerdownAnimationOn = false	-- No animation when growing
-local smwDragAndDropOn = true				-- Ability to drag sprites
-
--- Only when a movie is playing 
-local optionShowMovieInfo = true			-- Re-record count, movie name.
-
--- Others
-local guiOpacity = 0.8						-- Transparency value of GUI, default = 0.8
-local showPMeter = false					-- Show graphical P-Meter
-local showSpriteInfo = true					-- Display sprite information
-local showMainInfo = true					-- Display Mario information
-local showYoshiInfo = true					-- Display yoshi information
-
-local optionShowPad = true					-- Show pad as lua drawings rather than emu.
-local optionShowEmuInfo = true				-- Show movie frame count, lag frames, recording/no movie etc
-local optionShowMainInfo = true				-- Game frame count, RNG, Game Mode
-
+local smwRegularDebugFuncOn = true
+local smwCutPowerupAnimationOn = false
+local smwCutPowerdownAnimationOn = false
+local smwDragAndDropOn = true
 
 -- Move speed definitions for free move mode.
 -- I guess you usually won't need to modify these.
@@ -56,7 +39,11 @@ local smwFreeMoveSpeed = 2.0 -- px/f
 local smwFreeMoveSpeedupMax = 4.0 -- px/f
 local smwFreeMovePMeterLength = 1 -- frame(s)
 
-
+local guiOpacity = 0.8
+local showPMeter = false
+local showSpriteInfo = true
+local showMainInfo = true
+local showYoshiInfo = true
 
 -- << options end here
 
@@ -238,19 +225,7 @@ end
 -- increment powerup
 function smwDoPowerUp()
     local powerup = memory.readbyte(RAM_powerup)
-if powerup < 3 then
-    memory.writebyte(RAM_powerup, (powerup + 1))
-else
-    memory.writebyte(RAM_powerup, 0)
-end
-
-
-
-end
-
-function smwBalloon()
-    local p = memory.readbyte(RAM_pBalloonTimerAlt)
-    memory.writebyte(RAM_pBalloonTimerAlt, (p + 100))
+    memory.writebyte(RAM_powerup, (powerup + 1) % 4)
 end
 
 -- set move method
@@ -270,11 +245,11 @@ end
 
 -- P-meter mode
 function smwMovePMeterProc()
-    memory.writebyte(RAM_pMeter, 0)
-    memory.writebyte(RAM_takeOffMeter, 0)
+    memory.writebyte(RAM_pMeter, pMeter_max)
+    memory.writebyte(RAM_takeOffMeter, takeOffMeter_max+1)
 end
 
--- count own pmeter for
+-- count own pmeter for 
 function smwFreeMovePMeterCount()
     local move = pad_press[smwPlayer].left or pad_press[smwPlayer].right
         or pad_press[smwPlayer].up or pad_press[smwPlayer].down
@@ -475,7 +450,7 @@ function smwApplyLevelCheats()
             preventItemPopup = true
         end
         -- moving method
-        if not smwPause and pad_press[smwPlayer].L and pad_down[smwPlayer].R then
+        if not smwPause and pad_press[smwPlayer].L and pad_down[smwPlayer].A then
             smwSetMoveMethod(smwMoveMethod + 1)
         end
         if not smwPause then
@@ -580,26 +555,18 @@ function smwDrawSpriteInfo()
         local y = memory.readbytesigned(0x7e14d4+id) * 0x100 + memory.readbyte(0x7e00d8+id)
         local xsub = memory.readbyte(0x7e14f8+id)
         local ysub = memory.readbyte(0x7e14ec+id)
+        local xspeed = memory.readbyte(0x7e00b6+id)
+        local yspeed = memory.readbyte(0x7e00aa+id)
         local hOffscreenAlt = (math.abs(cameraX - x + 112) > 176)
         local vOffscreenAlt = (math.abs(cameraY - y + 88) > 208)
-		local stunTimer = memory.readbyte(0x7e1540 + id) ;
-		local TYPE = memory.readbyte(0x7e009e + id) ;
-		
+
         if stat ~= 0 then -- not hOffscreen and not vOffscreen then
-			
-			local stunString = tostring(stunTimer);
-			
-			if stunString == "0" then
-				stunString = ""
-			end
-			
-            local dispString = string.format("#%01X %02X (%d.%02X, %d.%02X)", id, TYPE, x, xsub, y, ysub)
+            local dispString = string.format("#%02d (%d.%02x, %d.%02x)", id, x, xsub, y, ysub)
             local colorString = colorTable[1 + id % #colorTable]
             if not vOffscreenAlt and not hOffscreenAlt then
-                gui.text(math.min(242, math.max(2, 2 + x - cameraX)), math.min(216, math.max(2, -8 + y - cameraY)), string.format("#%01X", id), colorString)
-				gui.text(math.min(242, math.max(2, 2 + x - cameraX)), math.min(216, math.max(2, -8 + y - cameraY) + 8), string.format("%s", stunString), colorString) 
+                gui.text(math.min(242, math.max(2, 2 + x - cameraX)), math.min(216, math.max(2, -8 + y - cameraY)), string.format("#%02d", id), colorString)
             end
-            gui.text(163, 40 + spriteCount * 8, dispString, colorString)
+            gui.text(172, 36 + spriteCount * 8, dispString, colorString)
             spriteCount = spriteCount + 1
         end
     end
@@ -731,104 +698,6 @@ function smwDrawYoshiInfo()
     end
 end
 
-function showPad()
-	local padPos = 0.5;
-	local padPosY = 217;
-	local padDiff = 6;
-	
-	
-	if pad_press[smwPlayer] then
-		if pad_press[smwPlayer].left  	then transparencyLeft	= 0.5 else transparencyLeft	= 3  end;
-		if pad_press[smwPlayer].right 	then transparencyRight	= 0.5 else transparencyRight= 3  end;
-		if pad_press[smwPlayer].up    	then transparencyUp 	= 0.5 else transparencyUp 	= 3  end;
-		if pad_press[smwPlayer].down  	then transparencyDown	= 0.5 else transparencyDown	= 3  end;
-		if pad_press[smwPlayer].A  	  	then transparencyA		= 0.5 else transparencyA	= 3  end;
-		if pad_press[smwPlayer].B     	then transparencyB		= 0.5 else transparencyB	= 3  end;
-		if pad_press[smwPlayer].X     	then transparencyX		= 0.5 else transparencyX	= 3  end;
-		if pad_press[smwPlayer].Y     	then transparencyY		= 0.5 else transparencyY	= 3  end;
-		if pad_press[smwPlayer].L     	then transparencyL		= 0.5 else transparencyL	= 3  end;
-		if pad_press[smwPlayer].R     	then transparencyR		= 0.5 else transparencyR	= 3  end;
-		if pad_press[smwPlayer].start	then transparencyStart	= 0.5 else transparencyStart= 3  end;
-		if pad_press[smwPlayer].select  then transparencySelect	= 0.5 else transparencySelect = 3  end;
-	end
-	
-	gui.transparency(1);
-	gui.box(0, 216, 80, 225, "#AAAAAA");
-	gui.transparency(transparencyLeft);
-	gui.text(padPos + padDiff, padPosY, "<");
-	gui.transparency(transparencyUp);
-	gui.text(padPos + padDiff * 2, padPosY, "^");
-	gui.transparency(transparencyRight);
-	gui.text(padPos + padDiff * 3, padPosY, ">");
-	gui.transparency(transparencyDown); 
-	gui.text(padPos + padDiff * 4, padPosY, "v");
-	gui.transparency(transparencyA);       
-	gui.text(padPos + padDiff * 5, padPosY, "A");
-	gui.transparency(transparencyB);         
-	gui.text(padPos + padDiff * 6, padPosY, "B");
-	gui.transparency(transparencyY);           
-	gui.text(padPos + padDiff * 7, padPosY, "Y");
-	gui.transparency(transparencyX);          
-	gui.text(padPos + padDiff * 8, padPosY, "X");
-	gui.transparency(transparencyL);
-	gui.text(padPos + padDiff * 9, padPosY, "L");
-	gui.transparency(transparencyR);
-	gui.text(padPos + padDiff * 10, padPosY, "R");
-	gui.transparency(transparencyStart);
-	gui.text(padPos + padDiff * 11, padPosY, "S");
-	gui.transparency(transparencySelect);
-	gui.text(padPos + padDiff * 12, padPosY, "s");
-	gui.transparency(guiOpacity);
-end
-
-function showMovieInfo()
-	local movieName = movie.getname()
-	--local movieReadOnly = movie.readonly()
-	local movieRedos = movie.rerecordcount()
-	
-	local movieInfoPosX = 1
-	local movieInfoPosY = 190
-	
-	gui.text(movieInfoPosX, movieInfoPosY, movieName)
-	gui.text(movieInfoPosX, movieInfoPosY + 8, "Rerecords: " .. movieRedos)
-end
-
-function showEmuInfo()
-	local emuInfoPosX = 1
-	local emuInfoPosY = 32
-	local yDiff = 8
-	
-	gui.transparency(guiOpacity);
-
-	if emu.lagged() then 
-		lagCountColor = "#FF0000" 
-		lagChar = "*";
-	else 
-		lagCountColor = "#FFFFFF"
-		lagChar = "";
-	end
-	
-	if not movie.mode() then movieMode = "NO MOVIE" else movieMode = string.upper(movie.mode()) end
-	gui.text(emuInfoPosX, emuInfoPosY + yDiff * 1, string.format("%d (%s)", movieFrames, movieMode)) 
-	gui.text(emuInfoPosX, emuInfoPosY + yDiff * 2, string.format("%d %s", lagFrames, lagChar), lagCountColor)
-end
-
-function showMainInfo()
-	local RNG 	= memory.readbyte(0x7e148d);
-	local RNG2	= memory.readbyte(0x7e148e);
-	local Mode	= memory.readbyte(RAM_gameMode);
-	local reserve = memory.readbyte(0x7e0dbc);
-	local POW = memory.readbyte(0x7e0019);
-		
-	
-	gui.text(3, 2, string.format("F: %03d     Mode: %02X     RNG: (%03d, %03d)     POW: %02X", 
-	memory.readbyte(RAM_frameCountAlt), Mode, RNG, RNG2, POW ));
-	
-	if Mode == 0x14 then
-		gui.text(124, 30, string.format("%02X", memory.readbyte(0x7e0dc2)));
-	end
-end
-
 -- display some useful information
 function smwDisplayInfo()
     if showPMeter then
@@ -843,22 +712,6 @@ function smwDisplayInfo()
     if showYoshiInfo then
         smwDrawYoshiInfo()
     end
-	
-	if movie.active() and optionShowMovieInfo then
-		showMovieInfo();
-	end
-	
-	if optionShowMainInfo then
-		showMainInfo();
-	end
-	
-	if optionShowPad then
-		showPad();
-	end
-	
-	if optionShowEmuInfo then
-		showEmuInfo();
-	end
 end
 
 -- [ core ] --------------------------------------------------------------------
@@ -873,11 +726,9 @@ emu.registerbefore(function()
        end
        sendJoypad()
     end
-	movieFrames = movie.framecount() + 1;
-	lagFrames = emu.lagcount();
 end)
 
-emu.registerafter(function() --$7E:13E2
+emu.registerafter(function()
 end)
 
 emu.registerexit(function()
@@ -889,4 +740,3 @@ end)
 gui.register(function()
     smwDisplayInfo()
 end)
-
