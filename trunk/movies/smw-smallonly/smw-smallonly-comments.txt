@@ -10,8 +10,9 @@ No change
 #1 Iggy's Castle (0)
 No change
 
-Donut Plains 1b
-
+Donut Plains 1b (3)
+2 frames saved by optimizing the part where we get the koopa, doing 2 more cornerboosts and optimizing the shelljump at the end
+1 frames saved by having a better score
 
 Donut Secret 1a
 
