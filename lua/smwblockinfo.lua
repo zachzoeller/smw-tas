@@ -22,9 +22,7 @@ local keys, lastkeys= input.get(), input.get()
 local function UpdateKeys() lastkeys= keys;  keys= input.get() end
 local function Press(k) return keys[k] and (not lastkeys[k]) end
 
-
 local showbox = true
-
 local x1box
 local y1box
 local x2box
@@ -47,10 +45,8 @@ function main(slot)
 	local input=input.get()
 	local xcam=memory.readword(0x7E001A)
 	local ycam=memory.readword(0x7E001C)
-	
 	local x1=input.xmouse-(xcam+input.xmouse)%16
 	local y1=input.ymouse-(ycam+input.ymouse)%16-1
-	
 	local x2=x1+15
 	local y2=y1+15
 	
@@ -62,12 +58,10 @@ function main(slot)
 		end
 	end
 	
-	
-	
 	gui.transparency(2)
 	if showbox then gui.box(x1,y1,x2,y2,"#FFFFFF") end
 	
-	--This was a grid for the boxes
+	--This is a grid for the boxes
 	--[[
 	gui.transparency(2)
 	for i=xcam%16,256,16 do
@@ -80,8 +74,6 @@ function main(slot)
 	end
 	gui.transparency(0)
 	]]--
-	
-
 	
 	if Press("leftclick") then
 		if x1box==x1 and y1box==y1 then x1box=nil
@@ -113,18 +105,21 @@ function main(slot)
 		local xposl=memory.readbyte(0x7E00E4+slot)
 		local ysubpos=memory.readbyte(0x7E14EC+slot)
 		local guiypos=58
-		local all=(yposl+yposh*256)*16+ysubpos/16
+		local ypositem=yposl+yposh*256
+		local xpositem=xposl+xposh*256
+		local all=(ypositem)*16+ysubpos/16
 		
 		if bottom and x1box then
-			gui.text(210,50,string.format("%d.%02x",yposl+yposh*256, ysubpos))
+			local blockbottom=y1box+ycambox+15
+			gui.text(210,50,string.format("%d.%02x",ypositem, ysubpos))
 			j=nil
 			for i = 0,15,3 do
 				all=all-(112-i)
-				if y1box and (all-all%16)/16 == (y1box+ycambox+15) then
+				if y1box and (all-all%16)/16 == (blockbottom) then
 					j=i
 				end
-				--if y1box then gui.text(100,guiypos+42,string.format("%d %d",(all-all%16)/16,(y1box+ycambox+15)+1)) end
-				if j==i-3 and (all-all%16)/16 == (y1box+ycambox+15)-7 then
+				--if y1box then gui.text(100,guiypos+42,string.format("%d %d",(all-all%16)/16,(blockbottom)+1)) end
+				if j==i-3 and (all-all%16)/16 == (blockbottom)-7 then
 					if (j/3)%2==0 then
 						if memory.readbyte(0x7E0013)%2==1 then
 							gui.text(236,guiypos,"LEFT","#FF0000")
@@ -139,13 +134,11 @@ function main(slot)
 						end
 					end
 				end
-				
 				gui.text(210,guiypos,string.format("%d.%02x",(all-all%16)/16,all%16*16))
-				
 				guiypos=guiypos+8
 			end
 			
-			if yposl+yposh*256 > (y1box+ycambox+15)-8 and yposl+yposh*256 < (y1box+ycambox+15)+1 then
+			if ypositem > (blockbottom)-8 and ypositem < (blockbottom)+1 then
 				if memory.readbyte(0x7E0013)%2==0 then
 					gui.text(236,50,"LEFT","#FF0000")
 				else
@@ -153,14 +146,7 @@ function main(slot)
 				end
 			end
 			
-			if yposl+yposh*256 == (y1box+ycambox+15)-8 and xposl+xposh*256 <= x1box+xcambox+7 and xposl+xposh*256 >= x1box+xcambox+4 then
-				if memory.readbyte(0x7E0013)%2==0 then
-					gui.text(236,50,"LEFT","#FF0000")
-				else
-					gui.text(236,50,"RIGHT","#FF0000")
-				end
-			end
-			if yposl+yposh*256 == (y1box+ycambox+15)-9 and xposl+xposh*256 <= x1box+xcambox+7 and xposl+xposh*256 >= x1box+xcambox+4 then
+			if ypositem == (blockbottom)-8 and xpositem <= x1box+xcambox+7 and xpositem >= x1box+xcambox+4 then
 				if memory.readbyte(0x7E0013)%2==0 then
 					gui.text(236,50,"LEFT","#FF0000")
 				else
@@ -168,14 +154,7 @@ function main(slot)
 				end
 			end
 			
-			if yposl+yposh*256 == (y1box+ycambox+15)-8 and xposl+xposh*256 >= x1box+xcambox-8 and xposl+xposh*256 <= x1box+xcambox-5 then
-				if memory.readbyte(0x7E0013)%2==0 then
-					gui.text(236,50,"LEFT","#FF0000")
-				else
-					gui.text(236,50,"RIGHT","#FF0000")
-				end
-			end
-			if yposl+yposh*256 == (y1box+ycambox+15)-9 and xposl+xposh*256 >= x1box+xcambox-8 and xposl+xposh*256 <= x1box+xcambox-5 then
+			if ypositem == (blockbottom)-9 and xpositem <= x1box+xcambox+7 and xpositem >= x1box+xcambox+4 then
 				if memory.readbyte(0x7E0013)%2==0 then
 					gui.text(236,50,"LEFT","#FF0000")
 				else
@@ -183,14 +162,25 @@ function main(slot)
 				end
 			end
 			
-			if yposl+yposh*256 == (y1box+ycambox+15)-8 or yposl+yposh*256 == (y1box+ycambox+15)-9 then
+			if ypositem == (blockbottom)-8 and xpositem >= x1box+xcambox-8 and xpositem <= x1box+xcambox-5 then
+				if memory.readbyte(0x7E0013)%2==0 then
+					gui.text(236,50,"LEFT","#FF0000")
+				else
+					gui.text(236,50,"RIGHT","#FF0000")
+				end
+			end
+			
+			if ypositem == (blockbottom)-9 and xpositem >= x1box+xcambox-8 and xpositem <= x1box+xcambox-5 then
+				if memory.readbyte(0x7E0013)%2==0 then
+					gui.text(236,50,"LEFT","#FF0000")
+				else
+					gui.text(236,50,"RIGHT","#FF0000")
+				end
+			end
+			
+			if ypositem == (blockbottom)-8 or ypositem == (blockbottom)-9 then
 				gui.text(236,42,"TOP","#FF0000")
 			end
-			
-			--X camera things
-			
-			--gui.text(100,100,string.format("%d, %d, %d..%d",xposl+xposh*256, x1box+xcambox-8, x1box+xcambox+7, (y1box+ycambox+15)-9 ))
-		
 		end
 	end
 end
