@@ -55,7 +55,7 @@ function main(slot)
 	local y2=y1+15
 	
 	if Press("rightclick") then
-		if showbox==true then
+		if showbox then
 			showbox=false
 		else
 			showbox=true
@@ -65,7 +65,7 @@ function main(slot)
 	
 	
 	gui.transparency(2)
-	if showbox==true then gui.box(x1,y1,x2,y2,"#FFFFFF") end
+	if showbox then gui.box(x1,y1,x2,y2,"#FFFFFF") end
 	
 	--This was a grid for the boxes
 	--[[
@@ -100,20 +100,22 @@ function main(slot)
 		gui.box(x1box-xdiff,y1box-ydiff,x2box-xdiff,y2box-ydiff,"#FFFFFF")
 		gui.transparency(0)
 		--The three values for the box
-		if bottom==true then gui.text(x2box-xdiff-13,y2box-ydiff+1,y1box+ycambox+15) end
-		if right==true then gui.text(x2box-xdiff+2,y2box-ydiff-13,x1box+xcambox+13) end
-		if left==true then gui.text(x1box-xdiff-16,y2box-ydiff-13,x1box+xcambox-14) end
+		if bottom then gui.text(x2box-xdiff-13,y2box-ydiff+1,y1box+ycambox+15) end
+		if right then gui.text(x2box-xdiff+2,y2box-ydiff-13,x1box+xcambox+13) end
+		if left then gui.text(x1box-xdiff-16,y2box-ydiff-13,x1box+xcambox-14) end
 	end
 	
 	--Duplication help
 	if slot then
 		local yposh=memory.readbyte(0x7E14D4+slot)
-		local yposl=memory.readbyte(0x7E00d8+slot)
+		local xposh=memory.readbyte(0x7E14E0+slot)
+		local yposl=memory.readbyte(0x7E00D8+slot)
+		local xposl=memory.readbyte(0x7E00E4+slot)
 		local ysubpos=memory.readbyte(0x7E14EC+slot)
 		local guiypos=58
 		local all=(yposl+yposh*256)*16+ysubpos/16
 		
-		if bottom==true and x1box then
+		if bottom and x1box then
 			gui.text(210,50,string.format("%d.%02x",yposl+yposh*256, ysubpos))
 			j=nil
 			for i = 0,15,3 do
@@ -121,7 +123,7 @@ function main(slot)
 				if y1box and (all-all%16)/16 == (y1box+ycambox+15) then
 					j=i
 				end
-				--if y1box then gui.text(100,guiypos+42,string.format("%d %d",(all-all%16)/16,(y1box+ycambox+15)-7)) end
+				--if y1box then gui.text(100,guiypos+42,string.format("%d %d",(all-all%16)/16,(y1box+ycambox+15)+1)) end
 				if j==i-3 and (all-all%16)/16 == (y1box+ycambox+15)-7 then
 					if (j/3)%2==0 then
 						if memory.readbyte(0x7E0013)%2==1 then
@@ -137,10 +139,58 @@ function main(slot)
 						end
 					end
 				end
+				
 				gui.text(210,guiypos,string.format("%d.%02x",(all-all%16)/16,all%16*16))
 				
 				guiypos=guiypos+8
 			end
+			
+			if yposl+yposh*256 > (y1box+ycambox+15)-8 and yposl+yposh*256 < (y1box+ycambox+15)+1 then
+				if memory.readbyte(0x7E0013)%2==0 then
+					gui.text(236,50,"LEFT","#FF0000")
+				else
+					gui.text(236,50,"RIGHT","#FF0000")
+				end
+			end
+			
+			if yposl+yposh*256 == (y1box+ycambox+15)-8 and xposl+xposh*256 <= x1box+xcambox+7 and xposl+xposh*256 >= x1box+xcambox+4 then
+				if memory.readbyte(0x7E0013)%2==0 then
+					gui.text(236,50,"LEFT","#FF0000")
+				else
+					gui.text(236,50,"RIGHT","#FF0000")
+				end
+			end
+			if yposl+yposh*256 == (y1box+ycambox+15)-9 and xposl+xposh*256 <= x1box+xcambox+7 and xposl+xposh*256 >= x1box+xcambox+4 then
+				if memory.readbyte(0x7E0013)%2==0 then
+					gui.text(236,50,"LEFT","#FF0000")
+				else
+					gui.text(236,50,"RIGHT","#FF0000")
+				end
+			end
+			
+			if yposl+yposh*256 == (y1box+ycambox+15)-8 and xposl+xposh*256 >= x1box+xcambox-8 and xposl+xposh*256 <= x1box+xcambox-5 then
+				if memory.readbyte(0x7E0013)%2==0 then
+					gui.text(236,50,"LEFT","#FF0000")
+				else
+					gui.text(236,50,"RIGHT","#FF0000")
+				end
+			end
+			if yposl+yposh*256 == (y1box+ycambox+15)-9 and xposl+xposh*256 >= x1box+xcambox-8 and xposl+xposh*256 <= x1box+xcambox-5 then
+				if memory.readbyte(0x7E0013)%2==0 then
+					gui.text(236,50,"LEFT","#FF0000")
+				else
+					gui.text(236,50,"RIGHT","#FF0000")
+				end
+			end
+			
+			if yposl+yposh*256 == (y1box+ycambox+15)-8 or yposl+yposh*256 == (y1box+ycambox+15)-9 then
+				gui.text(236,42,"TOP","#FF0000")
+			end
+			
+			--X camera things
+			
+			--gui.text(100,100,string.format("%d, %d, %d..%d",xposl+xposh*256, x1box+xcambox-8, x1box+xcambox+7, (y1box+ycambox+15)-9 ))
+		
 		end
 	end
 end
