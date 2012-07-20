@@ -12,10 +12,11 @@ No change
 
 Donut Plains 1b (3)
 2 frames saved by optimizing the part where we get the koopa, doing 2 more cornerboosts and optimizing the shelljump at the end
-1 frames saved by having a better score
+1 frame saved by having a better score
 
-Donut Secret 1a
-
+Donut Secret 1a (5)
+1 frame saved at the part with the throwblock and before the goal where we have to go up
+1 frame saved by having a better score
 
 Donut Secret 1b
 
