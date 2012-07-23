@@ -18,8 +18,9 @@ Donut Secret 1a (5)
 1 frame saved at the part with the throwblock and before the goal where we have to go up
 1 frame saved by having a better score
 
-Donut Secret 1b
-
+Donut Secret 1b (5)
+1 frame saved by optimizing the part with the throwblock and with the key
+1 frame lost by some framerule in the overworld
 
 Donut Secret House b
 
