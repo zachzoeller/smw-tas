@@ -25,11 +25,11 @@ Donut Secret 1b (5)
 Donut Secret House b (5)
 No change
 
-Donut Secret House a
+Donut Secret House a (5)
+No change
 
-
-Donut Secret 2
-
+Donut Secret 2 (6)
+1 frame saved because Panga entered the pipe(overworld) 1 frame too late^^ 
 
 Donut Plains 3
 
